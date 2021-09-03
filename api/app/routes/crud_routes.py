@@ -14,11 +14,11 @@ CRUD_COLLECTIONS = ['tasks']
 
 # note: digit values are automatically converted to int on create or update
 REQUIRED_FIELDS = {
-    'tasks': ['title', 'start_date', 'end_date'],
+    'tasks': ['title', 'date'],
 }
 
 UPDATEABLE_FIELDS = {
-    'tasks': ['title', 'start_date', 'end_date', 'description'],
+    'tasks': ['title', 'date', 'description'],
 }
 
 # writeable at the time of create, apart from the required ones
