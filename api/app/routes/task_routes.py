@@ -39,7 +39,7 @@ def get_tasks_by_date_range(start_date_in, end_date_in):
     (total, data) = db.read(
         page=page,
         per_page=per_page,
-        filter={'date': {'$gt': start_date, '$lt': end_date}}
+        filter={'date': {'$gte': start_date, '$lte': end_date}}
     )
 
     prev_page = '/api/tasks/{}/{}?page={}'.format(start_date_in, end_date_in, page-1) if page > 1 else None
