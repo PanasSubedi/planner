@@ -139,6 +139,22 @@ def get_objects(collection):
     if collection not in CRUD_COLLECTIONS:
         return respond({'error': 'Page not found'}, 404)
 
+    page = int(request.args.get('page', 1))
+    per_page = app.config['ITEMS_PER_PAGE']
+
     db = MongoAPI(DATABASE, collection)
-    response = db.read()
+    (total, data) = db.read(page=page, per_page=per_page)
+
+    prev_page = '/api/{}?page={}'.format(collection, page-1) if page > 1 else None
+    next_page = '/api/{}?page={}'.format(collection, page+1) if page * per_page < total else None
+
+    response = {}
+    response['links'] = {
+        'self': '/api/{}?page={}'.format(collection, page),
+        'prev_page': prev_page,
+        'next_page': next_page,
+    }
+
+    response['items'] = data
+
     return respond(response, 200)

@@ -22,10 +22,19 @@ class MongoAPI:
         else:
             return self.collection.find({'_id': int(id)})[0]
 
-    def read(self, filter=None):
-        documents = self.collection.find(filter)
+    def read(self, page=1, per_page=10, all_items=False, filter=None):
+
+        total = self.collection.find(filter).count()
+
+        if all_items:
+            documents = self.collection.find(filter)
+        else:
+
+            offset = (page-1)*per_page
+            documents = self.collection.find(filter).skip(offset).limit(per_page)
+
         output = [{item: data[item] for item in data} for data in documents]
-        return output
+        return (total, output)
 
     def write_raw(self, document):
         self.collection.insert_one(document)
