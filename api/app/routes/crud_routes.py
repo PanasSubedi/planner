@@ -8,8 +8,6 @@ from app.helpers.cleanup_input import cleanup_input
 
 from collections import namedtuple
 
-DATABASE = app.config['DATABASE']
-
 CRUD_COLLECTIONS = ['tasks']
 
 # note: digit values are automatically converted to int on create or update
@@ -49,12 +47,12 @@ def delete_object(collection, id):
     if id in NON_MODIFIABLE[collection]:
         return respond({'error': 'Cannot be modified'}, 400)
 
-    db = MongoAPI(DATABASE, collection)
+    db = MongoAPI(collection)
     if not db.exists({'_id': id}):
         return respond({'error': 'The collection has no record with the provided ID'}, 400)
 
     for check in EXISTENCE_CHECKS_BEFORE_DELETE[collection]:
-        child_db = MongoAPI(DATABASE, check.collection)
+        child_db = MongoAPI(check.collection)
         if child_db.exists({check.field_name: id}):
             return respond({'error': 'Please first remove all the {} for this entity'.format(check.collection)}, 400)
 
@@ -75,7 +73,7 @@ def update_object(collection, id):
     if data is None or data == {}:
         return respond({'error': 'Please provide the data to update'}, 400)
 
-    db = MongoAPI(DATABASE, collection)
+    db = MongoAPI(collection)
     if not db.exists({'_id': id}):
         return respond({'error': 'The collection has no record with the provided ID'}, 400)
 
@@ -121,7 +119,7 @@ def add_object(collection):
     if not status:
         return respond(final_data, 400)
 
-    db = MongoAPI(DATABASE, collection)
+    db = MongoAPI(collection)
     response = db.write(final_data)
     return respond(response, 200)
 
@@ -130,7 +128,7 @@ def get_object(collection, id):
     if collection not in CRUD_COLLECTIONS:
         return respond({'error': 'Page not found'}, 404)
 
-    db = MongoAPI(DATABASE, collection)
+    db = MongoAPI(collection)
     response = db.read_one(id)
     return respond(response, 200)
 
@@ -142,7 +140,7 @@ def get_objects(collection):
     page = int(request.args.get('page', 1))
     per_page = app.config['ITEMS_PER_PAGE']
 
-    db = MongoAPI(DATABASE, collection)
+    db = MongoAPI(collection)
     (total, data) = db.read(page=page, per_page=per_page)
 
     prev_page = '/api/{}?page={}'.format(collection, page-1) if page > 1 else None
@@ -154,7 +152,7 @@ def get_objects(collection):
         'prev_page': prev_page,
         'next_page': next_page,
     }
-
+    response['total_items'] = total
     response['items'] = data
 
     return respond(response, 200)

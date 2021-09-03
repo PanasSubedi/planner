@@ -2,13 +2,11 @@ from datetime import datetime
 
 def cleanup_task_input(data):
     try:
-        if 'start_date' in data:
-            data['start_date'] = datetime.strptime(data['start_date'], '%d-%m-%Y')
-        if 'end_date' in data:
-            data['end_date'] = datetime.strptime(data['end_date'], '%d-%m-%Y')
-    except:
+        if 'date' in data:
+            data['date'] = datetime.strptime(str(data['date']), '%d-%m-%Y')
+    except ValueError:
         return (False, {'error': 'invalid date format. Please provide date in the format dd-mm-yyyy'})
-        
+
     return (True, data)
 
 

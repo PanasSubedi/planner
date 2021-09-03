@@ -3,13 +3,14 @@ from flask import json
 
 from app import app
 DATABASE_HOST = app.config['DATABASE_HOST']
+DATABASE = app.config['DATABASE']
 
 class MongoAPI:
 
-    def __init__(self, database, collection):
+    def __init__(self, collection):
         self.client = MongoClient(DATABASE_HOST)
 
-        self.cursor = self.client[database]
+        self.cursor = self.client[DATABASE]
         self.collection = self.cursor[collection]
         self.collection_name = collection
 
