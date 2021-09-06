@@ -16,7 +16,11 @@ import {
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
 
-import { startOfMonth, lastDayOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import {
+  startOfMonth, lastDayOfMonth,
+  startOfWeek, endOfWeek,
+  format as dateFnsFormat,
+} from 'date-fns';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -95,8 +99,8 @@ function App() {
   }, [dateRangeLabel]);
 
   useEffect(() => {
-    const startDate = getDateInAPIFormat(dateRange.startDate);
-    const endDate = getDateInAPIFormat(dateRange.endDate);
+    const startDate = getDateInFormat(dateRange.startDate, 'api');
+    const endDate = getDateInFormat(dateRange.endDate, 'api');
 
     setLoading(true);
     fetch('api/tasks/'+startDate+'/'+endDate)
@@ -135,10 +139,14 @@ function App() {
     }
   }
 
-  const getDateInAPIFormat = date => {
-    return date.getDate().toString() + "-"
-          + (date.getMonth()+1).toString() + "-"
-          + (date.getFullYear()).toString();
+  const getDateInFormat = (date, format) => {
+    if (format === 'api'){
+      return dateFnsFormat(date, 'dd-MM-yyyy');
+    }
+
+    else if (format === 'display'){
+      return dateFnsFormat(date, 'dd-LLL-yyyy');
+    }
   }
 
   const handleDateChange = (startEnd, newDate) => {
@@ -167,6 +175,11 @@ function App() {
     setShowDateRangeDialog(true);
   }
 
+  const closeDateRangeDialog = () => {
+    setDateRangeLabel(0);
+    setShowDateRangeDialog(false);
+  }
+
   const classes = useStyles();
 
   return (
@@ -177,7 +190,7 @@ function App() {
       <Grid container>
         <Grid item sm={8}>
           <Typography variant="h6">{ getLabelForSelectedRange() }</Typography>
-          <Typography variant="caption">{getDateInAPIFormat(dateRange.startDate)} to {getDateInAPIFormat(dateRange.endDate)}</Typography>
+          <Typography variant="caption">{getDateInFormat(dateRange.startDate, 'display')} to {getDateInFormat(dateRange.endDate, 'display')}</Typography>
         </Grid>
         <Grid item sm={4}>
           { TIME_RANGE_LABELS.map(label => (
@@ -219,7 +232,7 @@ function App() {
           </MuiPickersUtilsProvider>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDateRangeDialog(false)} color="primary">
+          <Button onClick={closeDateRangeDialog} color="primary">
             Cancel
           </Button>
           <Button onClick={setCustomDateRange} color="primary">
