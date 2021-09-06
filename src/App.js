@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -8,6 +8,14 @@ import {
   Button,
   Typography,
 } from '@material-ui/core';
+
+import DateFnsUtils from '@date-io/date-fns';
+import {
+  DatePicker,
+  MuiPickersUtilsProvider,
+} from '@material-ui/pickers';
+
+import { startOfMonth, lastDayOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -19,6 +27,9 @@ const useStyles = makeStyles(theme => ({
   title: {
     flexGrow: 1,
   },
+  errorMessage: {
+    color: 'red',
+  }
 }));
 
 const TIME_RANGE_LABELS = [
@@ -38,8 +49,69 @@ const TIME_RANGE_LABELS = [
 
 function App() {
 
-  const [timeRangeLabel, setTimeRangeLabel] = useState(TIME_RANGE_LABELS[0].id)
+  const [dateRangeLabel, setDateRangeLabel] = useState(TIME_RANGE_LABELS[0].id)
+  const [dateRange, setDateRange] = useState({startDate: new Date(), endDate: new Date()})
+
   const [tasks, setTasks] = useState([]);
+  const [totalTasks, setTotalTasks] = useState(0);
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (dateRangeLabel === 1){
+      // today
+      setDateRange({
+        startDate: new Date(),
+        endDate: new Date()
+      })
+    }
+
+    else if (dateRangeLabel === 2){
+      // this week
+      const today = new Date();
+      setDateRange({
+        startDate: startOfWeek(today),
+        endDate: endOfWeek(today)
+      })
+    }
+
+    else if (dateRangeLabel === 3){
+      // this month
+      const today = new Date();
+      setDateRange({
+        startDate: startOfMonth(today),
+        endDate: lastDayOfMonth(today)
+      })
+    }
+
+  }, [dateRangeLabel]);
+
+  useEffect(() => {
+    const startDate = getDateInAPIFormat(dateRange.startDate);
+    const endDate = getDateInAPIFormat(dateRange.endDate);
+
+    setLoading(true);
+    fetch('api/tasks/'+startDate+'/'+endDate)
+      .then(response => response.json())
+      .then(data => {
+        setTotalTasks(data.total_items);
+        setTasks(data.items);
+        setLoading(false);
+      })
+      .catch(() => {
+        setTasks([]);
+        setErrorMessage('Internal error. Failed to retrieve tasks.');
+        setLoading(false);
+      });
+
+  }, [dateRange]);
+
+  const getDateInAPIFormat = date => {
+    return date.getDate().toString() + "-"
+          + (date.getMonth()+1).toString() + "-"
+          + (date.getFullYear()).toString()
+  }
 
   const classes = useStyles();
 
@@ -55,11 +127,12 @@ function App() {
         <Grid item sm={4}>
           { TIME_RANGE_LABELS.map(label => (
             <Button
-              disabled={label.id === timeRangeLabel}
-              onClick={() => setTimeRangeLabel(label.id)}
+              disabled={label.id === dateRangeLabel}
+              onClick={() => setDateRangeLabel(label.id)}
+              key={label.id}
             >{label.label}</Button>
           )) }
-          <Button onClick={() => setTimeRangeLabel(null)}>custom date</Button>
+          <Button onClick={() => setDateRangeLabel(null)}>custom date</Button>
         </Grid>
         <Grid item sm={12}>
           <List>
@@ -72,6 +145,13 @@ function App() {
               </ListItem>
             )) }
           </List>
+          <Typography variant="caption" className={classes.errorMessage}>
+            { errorMessage !== '' && <>{errorMessage}<br /></>}
+          </Typography>
+
+          <Typography variant="caption">
+            { loading ? <>Loading...</> : <>{totalTasks} total tasks</> }
+          </Typography>
         </Grid>
       </Grid>
     </Container>
