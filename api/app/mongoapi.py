@@ -23,7 +23,7 @@ class MongoAPI:
         else:
             return self.collection.find({'_id': int(id)})[0]
 
-    def read(self, page=1, per_page=10, all_items=False, filter=None):
+    def read(self, page=1, per_page=10, all_items=False, filter=None, sort=None):
 
         total = self.collection.find(filter).count()
 
@@ -33,6 +33,8 @@ class MongoAPI:
 
             offset = (page-1)*per_page
             documents = self.collection.find(filter).skip(offset).limit(per_page)
+            if sort is not None:
+                documents = documents.sort(*sort)
 
         output = [{item: data[item] for item in data} for data in documents]
         return (total, output)
