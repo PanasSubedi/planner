@@ -4,10 +4,10 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import {
   Container, Grid,
-  List, ListItem,
   Button,
   Typography,
   Dialog, DialogTitle, DialogContent, DialogActions,
+  TableContainer, Table, TableHead, TableBody, TableRow, TableCell,
 } from '@material-ui/core';
 
 import DateFnsUtils from '@date-io/date-fns';
@@ -63,6 +63,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const [links, setLinks] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: new Date(),
     endDate: new Date(),
@@ -102,8 +105,47 @@ function App() {
     const startDate = getDateInFormat(dateRange.startDate, 'api');
     const endDate = getDateInFormat(dateRange.endDate, 'api');
 
+    if (currentPage !== 1){
+      setCurrentPage(1);
+    }
+
+    else {
+
+      setLoading(true);
+      fetch('api/tasks/'+startDate+'/'+endDate)
+        .then(response => response.json())
+        .then(data => {
+
+          if ('error' in data){
+            setTotalTasks(0);
+            setTasks([]);
+            setErrorMessage(data.error);
+            setLoading(false);
+            setLinks(null);
+          }
+
+          else {
+            setTotalTasks(data.total_items);
+            setTasks(data.items);
+            setLoading(false);
+            setLinks(data.links);
+          }
+        })
+        .catch(() => {
+          setTasks([]);
+          setErrorMessage('Internal error. Failed to retrieve tasks.');
+          setLoading(false);
+        });
+
+    }
+  }, [dateRange]);
+
+  useEffect(() => {
+    const startDate = getDateInFormat(dateRange.startDate, 'api');
+    const endDate = getDateInFormat(dateRange.endDate, 'api');
+
     setLoading(true);
-    fetch('api/tasks/'+startDate+'/'+endDate)
+    fetch('api/tasks/'+startDate+'/'+endDate+'?page='+currentPage)
       .then(response => response.json())
       .then(data => {
 
@@ -112,12 +154,14 @@ function App() {
           setTasks([]);
           setErrorMessage(data.error);
           setLoading(false);
+          setLinks(null);
         }
 
         else {
           setTotalTasks(data.total_items);
           setTasks(data.items);
           setLoading(false);
+          setLinks(data.links);
         }
       })
       .catch(() => {
@@ -125,8 +169,7 @@ function App() {
         setErrorMessage('Internal error. Failed to retrieve tasks.');
         setLoading(false);
       });
-
-  }, [dateRange]);
+  }, [currentPage])
 
   const getLabelForSelectedRange = () => {
     const label = TIME_RANGE_LABELS.filter(label => label.id === dateRangeLabel)
@@ -180,6 +223,28 @@ function App() {
     setShowDateRangeDialog(false);
   }
 
+  const renderPagination = () => {
+
+    if (Object.keys(links).length === 0){
+      return
+    }
+
+    else if (links.next_page === null && links.prev_page === null){
+      return
+    }
+
+    else {
+      return (
+        <>
+          <Button onClick={() => setCurrentPage(currentPage-1)} disabled={links.prev_page === null}>&lt;</Button>
+          <Typography variant="caption">Page { currentPage }</Typography>
+          <Button onClick={() => setCurrentPage(currentPage+1)} disabled={links.next_page === null}>&gt;</Button><br/>
+        </>
+      )
+    }
+
+  }
+
   const classes = useStyles();
 
   return (
@@ -203,23 +268,50 @@ function App() {
           <Button onClick={showCustomDateDialog}>custom date</Button>
         </Grid>
         <Grid item sm={12}>
-          <List>
-            { tasks.map((task, index) => (
-              <ListItem
-                divider
-                key={task.id}
-              >
-                { `${index+1}.  ${task.title}` }
-              </ListItem>
-            )) }
-          </List>
+
+
+          { tasks.length !== 0 && <TableContainer>
+            <Table aria-label="table">
+              <TableHead>
+                <TableRow>
+                  <TableCell width="5%">SN</TableCell>
+                  <TableCell width="15%">Date</TableCell>
+                  <TableCell width="80%">Task</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                { tasks.map((task, index) => (
+                    <TableRow hover key={task._id}>
+                      <TableCell>
+                        { index+1 }
+                      </TableCell>
+                      <TableCell>
+                        { getDateInFormat(new Date(task.date), 'display') }
+                      </TableCell>
+                      <TableCell>
+                        { task.title }
+                      </TableCell>
+                    </TableRow>
+                  ))
+                }
+              </TableBody>
+            </Table>
+          </TableContainer> }
+
           <Typography variant="caption" className={classes.errorMessage}>
             { errorMessage !== '' && <>Error: {errorMessage}<br /></>}
           </Typography>
 
-          <Typography variant="caption">
-            { loading ? <>Loading...</> : <>{totalTasks} total tasks</> }
-          </Typography>
+          <Grid container justifyContent="space-between">
+            <Grid item>
+              <Typography variant="caption">
+                { loading ? <>Loading...</> : <>{totalTasks} total tasks</> }
+              </Typography>
+            </Grid>
+            <Grid item>
+              { renderPagination() }
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
 
