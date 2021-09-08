@@ -206,6 +206,7 @@ function App() {
       startDate: selectedDateRange.startDate,
       endDate: selectedDateRange.endDate,
     });
+    setDateRangeLabel(null);
     setShowDateRangeDialog(false);
   }
 
@@ -214,13 +215,7 @@ function App() {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
     })
-    setDateRangeLabel(null);
     setShowDateRangeDialog(true);
-  }
-
-  const closeDateRangeDialog = () => {
-    setDateRangeLabel(0);
-    setShowDateRangeDialog(false);
   }
 
   const renderPagination = () => {
@@ -324,7 +319,7 @@ function App() {
           </MuiPickersUtilsProvider>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDateRangeDialog} color="primary">
+          <Button onClick={() => setShowDateRangeDialog(false)} color="primary">
             Cancel
           </Button>
           <Button onClick={setCustomDateRange} color="primary">
