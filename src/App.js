@@ -112,16 +112,18 @@ function App() {
     else {
 
       setLoading(true);
-      fetch('api/tasks/'+startDate+'/'+endDate)
+      setErrorMessage('');
+      setTasks([]);
+      setTotalTasks(0);
+      setLinks({});
+
+      fetch('api/tasks/'+startDate+'/'+endDate+'?page='+currentPage)
         .then(response => response.json())
         .then(data => {
 
           if ('error' in data){
-            setTotalTasks(0);
-            setTasks([]);
             setErrorMessage(data.error);
             setLoading(false);
-            setLinks(null);
           }
 
           else {
@@ -132,7 +134,6 @@ function App() {
           }
         })
         .catch(() => {
-          setTasks([]);
           setErrorMessage('Internal error. Failed to retrieve tasks.');
           setLoading(false);
         });
@@ -145,16 +146,18 @@ function App() {
     const endDate = getDateInFormat(dateRange.endDate, 'api');
 
     setLoading(true);
+    setErrorMessage('');
+    setTasks([]);
+    setTotalTasks(0);
+    setLinks({});
+
     fetch('api/tasks/'+startDate+'/'+endDate+'?page='+currentPage)
       .then(response => response.json())
       .then(data => {
 
         if ('error' in data){
-          setTotalTasks(0);
-          setTasks([]);
           setErrorMessage(data.error);
           setLoading(false);
-          setLinks(null);
         }
 
         else {
@@ -165,7 +168,6 @@ function App() {
         }
       })
       .catch(() => {
-        setTasks([]);
         setErrorMessage('Internal error. Failed to retrieve tasks.');
         setLoading(false);
       });
