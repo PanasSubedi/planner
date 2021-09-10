@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import {
   Container, Grid,
-  Button,
+  Button, TextField,
   Typography,
   Dialog, DialogTitle, DialogContent, DialogActions,
   TableContainer, Table, TableHead, TableBody, TableRow, TableCell,
@@ -34,6 +34,9 @@ const useStyles = makeStyles(theme => ({
   },
   errorMessage: {
     color: 'red',
+  },
+  newTaskInput: {
+    marginBottom: 25
   }
 }));
 
@@ -71,6 +74,11 @@ function App() {
     endDate: new Date(),
   });
   const [showDateRangeDialog, setShowDateRangeDialog] = useState(false);
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDate, setNewTaskDate] = useState(new Date());
+  const [createError, setCreateError] = useState('');
 
   useEffect(() => {
     if (dateRangeLabel === 1){
@@ -242,6 +250,54 @@ function App() {
 
   }
 
+  const handleCreateButtonPress = () => {
+    setNewTaskDate(new Date());
+    setNewTaskTitle('');
+    setCreateError('');
+    setShowCreateDialog(true);
+  }
+
+  const handleCreateTask = () => {
+
+    setLoading(true);
+    fetch('/api/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'title': newTaskTitle,
+        'date': getDateInFormat(newTaskDate, 'api'),
+      })
+    }).then(
+      response => {
+        if (response.status === 200){
+          setDateRange({
+            startDate: newTaskDate,
+            endDate: newTaskDate,
+          });
+
+          setLoading(false);
+          setShowCreateDialog(false);
+        }
+
+        else {
+          return response.json();
+        }
+      }
+    ).then(
+      data => {
+        if ('error' in data){
+          setCreateError('Error: ' + data.error);
+          setLoading(false);
+        }
+      }
+    ).catch( err => {
+      setCreateError('Internal error. Failed to create task.');
+      setLoading(false);
+    });
+  }
+
   const classes = useStyles();
 
   return (
@@ -250,9 +306,12 @@ function App() {
         Planner
       </Typography>
       <Grid container>
-        <Grid item sm={8}>
+        <Grid item sm={6}>
           <Typography variant="h6">{ getLabelForSelectedRange() }</Typography>
           <Typography variant="caption">{getDateInFormat(dateRange.startDate, 'display')} to {getDateInFormat(dateRange.endDate, 'display')}</Typography>
+        </Grid>
+        <Grid item sm={2} style={{textAlign: 'right'}}>
+          <Button variant="outlined" onClick={handleCreateButtonPress}>create</Button>
         </Grid>
         <Grid item sm={4}>
           { TIME_RANGE_LABELS.map(label => (
@@ -325,6 +384,37 @@ function App() {
             Cancel
           </Button>
           <Button onClick={setCustomDateRange} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        fullWidth
+      >
+        <DialogTitle id="form-dialog-title">Create task</DialogTitle>
+        <DialogContent>
+          <TextField
+            value={newTaskTitle}
+            onChange={event => setNewTaskTitle(event.target.value)}
+            label="Title"
+            className={classes.newTaskInput}
+            fullWidth
+          />
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <DatePicker fullWidth className={classes.newTaskInput} value={newTaskDate} onChange={setNewTaskDate} />
+          </MuiPickersUtilsProvider>
+          <Typography variant="caption" className={classes.errorMessage}>
+            { createError !== '' && <>Error: {createError}<br /></>}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowCreateDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleCreateTask} color="primary">
             OK
           </Button>
         </DialogActions>
