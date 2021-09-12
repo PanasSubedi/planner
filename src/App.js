@@ -18,15 +18,18 @@ import {
 } from '@material-ui/pickers';
 
 import {
-  Edit as EditIcon,
-  Delete as DeleteIcon
-} from '@material-ui/icons';
-
-import {
   startOfMonth, lastDayOfMonth,
   startOfWeek, endOfWeek,
   format as dateFnsFormat,
 } from 'date-fns';
+
+import { TasksView } from './components/TasksView';
+import { CustomDateDialog } from './components/CustomDateDialog';
+import { AddEditDialog } from './components/AddEditDialog';
+
+import { handleDelete } from './helpers/handleDelete';
+import { handleAddEdit } from './helpers/handleAddEdit';
+import { renderPagination } from './helpers/renderPagination';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -75,10 +78,6 @@ function App() {
   const [links, setLinks] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [selectedDateRange, setSelectedDateRange] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
-  });
   const [showDateRangeDialog, setShowDateRangeDialog] = useState(false);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -210,52 +209,13 @@ function App() {
     }
   }
 
-  const handleDateChange = (startEnd, newDate) => {
-    if (startEnd === 'start'){
-      setSelectedDateRange(prevRange => ({startDate: newDate, endDate: prevRange.endDate}));
-    }
-    else {
-      setSelectedDateRange(prevRange => ({startDate: prevRange.startDate, endDate: newDate}));
-    }
-  }
-
-  const setCustomDateRange = () => {
+  const setCustomDateRange = (startDate, endDate) => {
     setDateRange({
-      startDate: selectedDateRange.startDate,
-      endDate: selectedDateRange.endDate,
+      startDate: startDate,
+      endDate: endDate,
     });
     setDateRangeLabel(null);
     setShowDateRangeDialog(false);
-  }
-
-  const showCustomDateDialog = () => {
-    setSelectedDateRange({
-      startDate: dateRange.startDate,
-      endDate: dateRange.endDate,
-    })
-    setShowDateRangeDialog(true);
-  }
-
-  const renderPagination = () => {
-
-    if (Object.keys(links).length === 0){
-      return
-    }
-
-    else if (links.next_page === null && links.prev_page === null){
-      return
-    }
-
-    else {
-      return (
-        <>
-          <Button onClick={() => setCurrentPage(currentPage-1)} disabled={links.prev_page === null}>&lt;</Button>
-          <Typography variant="caption">Page { currentPage }</Typography>
-          <Button onClick={() => setCurrentPage(currentPage+1)} disabled={links.next_page === null}>&gt;</Button><br/>
-        </>
-      )
-    }
-
   }
 
   const handleCreateEditButtonPress = (taskID) => {
@@ -292,79 +252,21 @@ function App() {
       url = '/api/tasks/' + editTaskID;
     }
 
-    setLoading(true);
-    fetch(url, {
-      method: method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        'title': newTaskTitle,
-        'date': getDateInFormat(newTaskDate, 'api'),
-      })
-    }).then(
-      response => {
-        if (response.status === 200){
-          setDateRange({
-            startDate: newTaskDate,
-            endDate: newTaskDate,
-          });
+    handleAddEdit(
+      url, method,
+      newTaskTitle, newTaskDate, getDateInFormat,
+      setLoading, setDateRange, setShowCreateDialog, setDateRangeLabel, setCreateError,
+    );
 
-          setLoading(false);
-          setShowCreateDialog(false);
-          setDateRangeLabel(null);
-          return {};
-        }
-
-        else {
-          return response.json();
-        }
-      }
-    ).then(
-      data => {
-        if ('error' in data){
-          setCreateError('Error: ' + data.error);
-          setLoading(false);
-        }
-      }
-    ).catch( err => {
-      setCreateError('Internal error. Failed to create task.');
-      setLoading(false);
-    });
   }
 
-  const handleDelete = taskID => {
-
-    setLoading(true);
-    fetch('/api/tasks/'+ taskID, {
-      method: 'DELETE',
-    }).then(
-      response => {
-        if (response.status === 200){
-          setDateRange({
-            startDate: dateRange.startDate,
-            endDate: dateRange.endDate,
-          });
-
-          setLoading(false);
-          return {};
-        }
-
-        else {
-          return response.json();
-        }
-      }
-    ).then(
-      data => {
-        if ('error' in data){
-          setErrorMessage('Error: ' + data.error);
-          setLoading(false);
-        }
-      }
-    ).catch( err => {
-      setCreateError('Internal error. Failed to delete task.');
-      setLoading(false);
-    });
+  const deleteTask = taskID => {
+    handleDelete(
+      taskID,
+      setLoading,
+      dateRange, setDateRange,
+      setErrorMessage,
+    )
   }
 
   const classes = useStyles();
@@ -390,46 +292,17 @@ function App() {
               key={label.id}
             >{label.label}</Button>
           )) }
-          <Button onClick={showCustomDateDialog}>custom date</Button>
+          <Button onClick={() => setShowDateRangeDialog(true)}>custom date</Button>
         </Grid>
         <Grid item sm={12}>
 
 
-          { tasks.length !== 0 && <TableContainer>
-            <Table aria-label="table">
-              <TableHead>
-                <TableRow>
-                  <TableCell width="5%">SN</TableCell>
-                  <TableCell width="10%">Date</TableCell>
-                  <TableCell width="75%">Task</TableCell>
-                  <TableCell width="10%"></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                { tasks.map((task, index) => (
-                    <TableRow hover key={task._id}>
-                      <TableCell>
-                        { index+1 }</TableCell>
-                      <TableCell>
-                        { getDateInFormat(new Date(task.date), 'display') }
-                      </TableCell>
-                      <TableCell>
-                        { task.title }
-                      </TableCell>
-                      <TableCell style={{textAlign: 'right'}}>
-                        <IconButton onClick={() => handleCreateEditButtonPress(task._id)} size="small">
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton onClick={() => handleDelete(task._id)} size="small">
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                }
-              </TableBody>
-            </Table>
-          </TableContainer> }
+          <TasksView
+            tasks={tasks}
+            getDateInFormat={getDateInFormat}
+            handleCreateEditButtonPress={handleCreateEditButtonPress}
+            deleteTask={deleteTask}
+          />
 
           <Typography variant="caption" className={classes.errorMessage}>
             { errorMessage !== '' && <>Error: {errorMessage}<br /></>}
@@ -442,60 +315,30 @@ function App() {
               </Typography>
             </Grid>
             <Grid item>
-              { renderPagination() }
+              { renderPagination(links, currentPage, setCurrentPage) }
             </Grid>
           </Grid>
         </Grid>
       </Grid>
 
-      <Dialog open={showDateRangeDialog} onClose={() => setShowDateRangeDialog(false)} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Choose custom date</DialogTitle>
-        <DialogContent>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <DatePicker value={selectedDateRange.startDate} onChange={newDate => handleDateChange('start', newDate)} />
-            <DatePicker value={selectedDateRange.endDate} onChange={newDate => handleDateChange('end', newDate)} />
-          </MuiPickersUtilsProvider>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowDateRangeDialog(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={setCustomDateRange} color="primary">
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CustomDateDialog
+        showDateRangeDialog={showDateRangeDialog}
+        setShowDateRangeDialog={setShowDateRangeDialog}
+        setCustomDateRange={setCustomDateRange}
+      />
 
-      <Dialog
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        fullWidth
-      >
-        <DialogTitle id="form-dialog-title">{createDialogTitle} task</DialogTitle>
-        <DialogContent>
-          <TextField
-            value={newTaskTitle}
-            onChange={event => setNewTaskTitle(event.target.value)}
-            label="Title"
-            className={classes.newTaskInput}
-            fullWidth
-          />
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <DatePicker fullWidth className={classes.newTaskInput} value={newTaskDate} onChange={setNewTaskDate} />
-          </MuiPickersUtilsProvider>
-          <Typography variant="caption" className={classes.errorMessage}>
-            { createError !== '' && <>Error: {createError}<br /></>}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowCreateDialog(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleCreateEditTask} color="primary">
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddEditDialog
+        showCreateDialog={showCreateDialog}
+        setShowCreateDialog={setShowCreateDialog}
+        handleCreateEditTask={handleCreateEditTask}
+        newTaskTitle={newTaskTitle}
+        setNewTaskTitle={setNewTaskTitle}
+        newTaskDate={newTaskDate}
+        setNewTaskDate={setNewTaskDate}
+        createDialogTitle={createDialogTitle}
+        createError={createError}
+        classes={classes}
+      />
 
     </Container>
   );
