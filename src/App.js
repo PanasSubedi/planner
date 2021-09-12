@@ -8,6 +8,7 @@ import {
   Typography,
   Dialog, DialogTitle, DialogContent, DialogActions,
   TableContainer, Table, TableHead, TableBody, TableRow, TableCell,
+  IconButton,
 } from '@material-ui/core';
 
 import DateFnsUtils from '@date-io/date-fns';
@@ -15,6 +16,11 @@ import {
   DatePicker,
   MuiPickersUtilsProvider,
 } from '@material-ui/pickers';
+
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon
+} from '@material-ui/icons';
 
 import {
   startOfMonth, lastDayOfMonth,
@@ -79,6 +85,8 @@ function App() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDate, setNewTaskDate] = useState(new Date());
   const [createError, setCreateError] = useState('');
+  const [createDialogTitle, setCreateDialogTitle] = useState('Create');
+  const [editTaskID, setEditTaskID] = useState(0);
 
   useEffect(() => {
     if (dateRangeLabel === 1){
@@ -250,18 +258,43 @@ function App() {
 
   }
 
-  const handleCreateButtonPress = () => {
-    setNewTaskDate(new Date());
-    setNewTaskTitle('');
+  const handleCreateEditButtonPress = (taskID) => {
+
+    if (taskID === 0){
+      setEditTaskID(0);
+      setNewTaskDate(new Date());
+      setNewTaskTitle('');
+      setCreateDialogTitle('Create');
+    }
+
+    else {
+      const task = tasks.filter(task => task._id === taskID)[0];
+      setEditTaskID(taskID);
+      setNewTaskDate(new Date(task.date));
+      setNewTaskTitle(task.title);
+      setCreateDialogTitle('Edit');
+    }
+
     setCreateError('');
     setShowCreateDialog(true);
   }
 
-  const handleCreateTask = () => {
+  const handleCreateEditTask = () => {
+
+    let method, url;
+    if (createDialogTitle === 'Create'){
+      method = 'POST';
+      url = '/api/tasks';
+    }
+
+    else if (createDialogTitle === 'Edit'){
+      method = 'PUT';
+      url = '/api/tasks/' + editTaskID;
+    }
 
     setLoading(true);
-    fetch('/api/tasks', {
-      method: 'POST',
+    fetch(url, {
+      method: method,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -279,6 +312,7 @@ function App() {
 
           setLoading(false);
           setShowCreateDialog(false);
+          return {};
         }
 
         else {
@@ -311,7 +345,7 @@ function App() {
           <Typography variant="caption">{getDateInFormat(dateRange.startDate, 'display')} to {getDateInFormat(dateRange.endDate, 'display')}</Typography>
         </Grid>
         <Grid item sm={2} style={{textAlign: 'right'}}>
-          <Button variant="outlined" onClick={handleCreateButtonPress}>create</Button>
+          <Button variant="outlined" onClick={() => handleCreateEditButtonPress(0)}>create</Button>
         </Grid>
         <Grid item sm={4}>
           { TIME_RANGE_LABELS.map(label => (
@@ -331,21 +365,29 @@ function App() {
               <TableHead>
                 <TableRow>
                   <TableCell width="5%">SN</TableCell>
-                  <TableCell width="15%">Date</TableCell>
-                  <TableCell width="80%">Task</TableCell>
+                  <TableCell width="10%">Date</TableCell>
+                  <TableCell width="75%">Task</TableCell>
+                  <TableCell width="10%"></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 { tasks.map((task, index) => (
                     <TableRow hover key={task._id}>
                       <TableCell>
-                        { index+1 }
-                      </TableCell>
+                        { index+1 }</TableCell>
                       <TableCell>
                         { getDateInFormat(new Date(task.date), 'display') }
                       </TableCell>
                       <TableCell>
                         { task.title }
+                      </TableCell>
+                      <TableCell style={{textAlign: 'right'}}>
+                        <IconButton onClick={() => handleCreateEditButtonPress(task._id)} size="small">
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small">
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))
@@ -394,7 +436,7 @@ function App() {
         onClose={() => setShowCreateDialog(false)}
         fullWidth
       >
-        <DialogTitle id="form-dialog-title">Create task</DialogTitle>
+        <DialogTitle id="form-dialog-title">{createDialogTitle} task</DialogTitle>
         <DialogContent>
           <TextField
             value={newTaskTitle}
@@ -414,7 +456,7 @@ function App() {
           <Button onClick={() => setShowCreateDialog(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleCreateTask} color="primary">
+          <Button onClick={handleCreateEditTask} color="primary">
             OK
           </Button>
         </DialogActions>
