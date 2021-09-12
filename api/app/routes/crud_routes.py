@@ -33,8 +33,7 @@ existence_check = namedtuple('ExistenceCheck', ['collection', 'field_name'])
 # field_name in which the data is stored
 
 EXISTENCE_CHECKS_BEFORE_DELETE = {
-    'pages': [existence_check('tabs', 'page_id')],
-    'tabs': [existence_check('pages', 'tab_id')]
+    'tasks': [],
 }
 
 @app.route('/api/<collection>/<id>', methods=['DELETE'])
