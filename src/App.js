@@ -312,6 +312,7 @@ function App() {
 
           setLoading(false);
           setShowCreateDialog(false);
+          setDateRangeLabel(null);
           return {};
         }
 
