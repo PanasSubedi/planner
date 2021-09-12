@@ -7,6 +7,21 @@ from app.mongoapi import MongoAPI
 
 from app import app
 
+@app.route('/api/tasks/<date>/exist')
+def tasks_exist_by_date(date):
+    if date == "0":
+        date = datetime.now()
+    else:
+        try:
+            date = datetime.strptime(date, '%d-%m-%Y')
+        except ValueError:
+            return respond({'error': 'invalid date format. Please provide date in the format dd-mm-yyyy'}, 400)
+
+    db = MongoAPI('tasks')
+    exist = db.exists({'date': date})
+    return respond({'exist': exist})
+
+
 @app.route('/api/tasks/<start_date_in>/<end_date_in>')
 def get_tasks_by_date_range(start_date_in, end_date_in):
     if start_date_in == "0":
