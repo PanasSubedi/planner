@@ -3,7 +3,7 @@ export const handleAddEdit = (
   title, date, getDateInFormat,
   setLoading, setDateRange, setShowCreateDialog, setDateRangeLabel, setCreateError,
 ) => {
-  
+
   setLoading(true);
   fetch(url, {
     method: method,
@@ -24,7 +24,6 @@ export const handleAddEdit = (
 
         setLoading(false);
         setShowCreateDialog(false);
-        setDateRangeLabel(null);
         return {};
       }
 

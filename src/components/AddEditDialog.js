@@ -1,12 +1,7 @@
-import { useState } from 'react';
-
 import {
-  Container, Grid,
   Button, TextField,
   Typography,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TableContainer, Table, TableHead, TableBody, TableRow, TableCell,
-  IconButton,
 } from '@material-ui/core';
 
 import DateFnsUtils from '@date-io/date-fns';
@@ -38,7 +33,7 @@ export const AddEditDialog = ({
           onChange={event => setNewTaskTitle(event.target.value)}
           label="Title"
           className={classes.newTaskInput}
-          fullWidth
+          fullWidth autoFocus
         />
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
           <DatePicker fullWidth className={classes.newTaskInput} value={newTaskDate} onChange={setNewTaskDate} />
