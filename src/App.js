@@ -32,31 +32,37 @@ const useStyles = makeStyles(theme => ({
 
 function App() {
 
+  // calendar view or task list view
   const [calendarView, setCalendarView] = useState(false);
 
   const [tasks, setTasks] = useState([]);
 
+  // for create and edit
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskDate, setNewTaskDate] = useState(new Date());
   const [createDialogTitle, setCreateDialogTitle] = useState('Create');
   const [createError, setCreateError] = useState('');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDate, setNewTaskDate] = useState(new Date());
   const [editTaskID, setEditTaskID] = useState(0);
 
+  // for pagination
   const [links, setLinks] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalTasks, setTotalTasks] = useState(0);
 
+  // loading before fetch calls
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const [totalTasks, setTotalTasks] = useState(0);
-
+  // for task list view, which shows tasks in multiple date range
   const [dateRange, setDateRange] = useState({startDate: new Date(), endDate: new Date()});
 
   useEffect(() => {
     const startDate = getDateInFormat(dateRange.startDate, 'api');
     const endDate = getDateInFormat(dateRange.endDate, 'api');
 
+    // if its not page 1, change to page 1, which automatically retrieves data
+    // if its page 1, just retrieve data in the new date range
     if (currentPage !== 1){
       setCurrentPage(1);
     }
@@ -73,6 +79,7 @@ function App() {
     const startDate = getDateInFormat(dateRange.startDate, 'api');
     const endDate = getDateInFormat(dateRange.endDate, 'api');
 
+    // retrieve new data on page changes
     fetchData(
       setLoading, setErrorMessage, setTasks, setTotalTasks, setLinks,
       startDate, endDate, currentPage
@@ -92,6 +99,7 @@ function App() {
 
   const handleCreateEditButtonPress = (taskID, date) => {
 
+    // taskID = 0 for addition
     if (taskID === 0){
       setEditTaskID(0);
       setNewTaskDate(new Date(date));

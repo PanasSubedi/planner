@@ -52,6 +52,8 @@ export const TaskListView = ({
   const [showDateRangeDialog, setShowDateRangeDialog] = useState(false);
 
   useEffect(() => {
+
+    // on change of labels, change date range which in turn fetches new data (App.js)
     if (dateRangeLabel === 1){
       // today
       setDateRange({

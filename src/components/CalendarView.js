@@ -44,6 +44,9 @@ export const CalendarView = ({
 
     for (let i=firstDay; i<=lastDay; i++){
       const currentDate = new Date(calendarDate.getMonth()+1 + "-" + i + "-" + calendarDate.getFullYear())
+
+      // check existence for each date in the month and set true/false based on the result
+      // to show asterisks (*) on dates which have task
       fetch(
         '/api/tasks/' + getDateInFormat(currentDate, 'api') + '/' + 'exist'
       ).then(
