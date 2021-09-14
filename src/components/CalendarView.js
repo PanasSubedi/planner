@@ -36,7 +36,7 @@ export const CalendarView = ({
       endDate: calendarDate
     })
 
-  }, [calendarDate]);
+  }, [calendarDate, setDateRange]);
 
   useEffect(() => {
     const firstDay = startOfMonth(calendarDate).getDate();
@@ -48,7 +48,7 @@ export const CalendarView = ({
       // check existence for each date in the month and set true/false based on the result
       // to show asterisks (*) on dates which have task
       fetch(
-        '/api/tasks/' + getDateInFormat(currentDate, 'api') + '/' + 'exist'
+        '/api/tasks/' + getDateInFormat(currentDate, 'api') + '/exist'
       ).then(
         response => response.json()
       ).then(
@@ -65,7 +65,7 @@ export const CalendarView = ({
         err => alert("Internal error.")
       )
     }
-  }, [calendarDate.getMonth(), calendarDate.getYear()]);
+  }, [calendarDate, getDateInFormat]);
 
   return (
     <Grid container spacing={2}>
