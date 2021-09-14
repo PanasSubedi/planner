@@ -90,11 +90,11 @@ function App() {
     }
   }
 
-  const handleCreateEditButtonPress = (taskID) => {
+  const handleCreateEditButtonPress = (taskID, date) => {
 
     if (taskID === 0){
       setEditTaskID(0);
-      setNewTaskDate(new Date());
+      setNewTaskDate(new Date(date));
       setNewTaskTitle('');
       setCreateDialogTitle('Create');
     }

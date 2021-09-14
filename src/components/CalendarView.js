@@ -10,10 +10,13 @@ import {
 } from '@material-ui/core';
 
 import {
+  startOfMonth, lastDayOfMonth,
   format as dateFnsFormat
 } from 'date-fns';
 
 import { TasksView } from './TasksView';
+
+let tasksExist = {};
 
 export const CalendarView = ({
   tasks, deleteTask, totalTasks,
@@ -24,32 +27,59 @@ export const CalendarView = ({
   currentPage, setCurrentPage,
 }) => {
 
-  const [date, setDate] = useState(new Date());
+  const [calendarDate, setCalendarDate] = useState(new Date());
 
   useEffect(() => {
 
     setDateRange({
-      startDate: date,
-      endDate: date
+      startDate: calendarDate,
+      endDate: calendarDate
     })
 
-  }, [date]);
+  }, [calendarDate]);
+
+  useEffect(() => {
+    const firstDay = startOfMonth(calendarDate).getDate();
+    const lastDay = lastDayOfMonth(calendarDate).getDate();
+
+    for (let i=firstDay; i<=lastDay; i++){
+      const currentDate = new Date(calendarDate.getMonth()+1 + "-" + i + "-" + calendarDate.getFullYear())
+      fetch(
+        '/api/tasks/' + getDateInFormat(currentDate, 'api') + '/' + 'exist'
+      ).then(
+        response => response.json()
+      ).then(
+        data => {
+          if ('error' in data){
+            alert("Internal error.");
+          }
+
+          else {
+            tasksExist[i] = data.exist;
+          }
+        }
+      ).catch(
+        err => alert("Internal error.")
+      )
+    }
+  }, [calendarDate.getMonth(), calendarDate.getYear()]);
 
   return (
     <Grid container spacing={2}>
       <Grid item sm={6}>
         <Calendar
-          onChange={setDate}
-          value={date}
+          onChange={setCalendarDate}
+          value={calendarDate}
+          tileContent={({ date }) => date.getMonth() === calendarDate.getMonth() && tasksExist[date.getDate()] ? "*" : ""}
         />
       </Grid>
       <Grid item sm={6}>
         <Grid container justifyContent="space-between">
           <Grid item>
-            <Typography variant="h6">{dateFnsFormat(date, 'dd LLLL, yyyy')}</Typography>
+            <Typography variant="h6">{dateFnsFormat(calendarDate, 'dd LLLL, yyyy')}</Typography>
           </Grid>
           <Grid item>
-            <Button variant="outlined" onClick={() => handleCreateEditButtonPress(0)}>create</Button>
+            <Button variant="outlined" onClick={() => handleCreateEditButtonPress(0, calendarDate)}>create</Button>
           </Grid>
         </Grid>
 

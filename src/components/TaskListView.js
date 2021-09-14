@@ -110,7 +110,7 @@ export const TaskListView = ({
           <Typography variant="caption">{getDateInFormat(dateRange.startDate, 'display')} to {getDateInFormat(dateRange.endDate, 'display')}</Typography>
         </Grid>
         <Grid item sm={2} style={{textAlign: 'right'}}>
-          <Button variant="outlined" onClick={() => handleCreateEditButtonPress(0)}>create</Button>
+          <Button variant="outlined" onClick={() => handleCreateEditButtonPress(0, new Date())}>create</Button>
         </Grid>
         <Grid item sm={4}>
           { TIME_RANGE_LABELS.map(label => (
