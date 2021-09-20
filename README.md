@@ -1,70 +1,106 @@
-# Getting Started with Create React App
+# The Planner
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+1. [Introduction](#introduction)
+2. [Getting Started](#getting-started)
+3. [Usage](#usage)
+4. [Screenshots](#screenshots)
+5. [Dependencies](#dependencies)
+6. [Technical Notes](#technical-notes)
 
-## Available Scripts
+## Introduction
 
-In the project directory, you can run:
+The Planner is a small project that helps you keep track of your engagements.
 
-### `yarn start`
+Using the application, you can:
+1. Add a planned task for a date.
+2. Edit or delete tasks.
+3. View tasks for today, this week, this month, or a custom date.
+4. Switch between **Calendar** or **List** views.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Getting Started
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. Clone the repo.
 
-### `yarn test`
+  `git clone`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Go to the project directory and install all the front-end dependencies using:
 
-### `yarn build`
+  `yarn`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Run the front-end using:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  `yarn start`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. Change the directory to `/api` and install all the back-end dependencies using:
 
-### `yarn eject`
+  `pip3 install -r requirements.txt`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+5. Create a `.flaskenv` file and add the following lines:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  ```
+    FLASK_APP=api.py
+    DATABASE=<name_of_your_database>
+    DATABASE_HOST=<database_host_url>
+  ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+6. Run the back-end using:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+  `flask run`
 
-## Learn More
+The app runs by default on http://localhost:3000
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Usage
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The home page opens with **Today's tasks** in the **List** view. In the application, you can:
 
-### Code Splitting
+1. Add, edit, or delete tasks.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+2. Toggle between **Calendar** and **List** views.
 
-### Analyzing the Bundle Size
+3. Choose **Today**, **This Week**, **This Month**, or **Custom Date** range to display the list of tasks.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-### Making a Progressive Web App
+## Screenshots
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+1. Home page
 
-### Advanced Configuration
+![Home Page](screenshots/homepage.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+2. Calendar view
 
-### Deployment
+![Calendar View](screenshots/calendar.png)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Dependencies
 
-### `yarn build` fails to minify
+### Tools
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. [Yarn](https://yarnpkg.com/)
+2. [Python3+](https://www.python.org/downloads/)
+3. [Pip](https://pip.pypa.io/en/stable/)
+4. [MongoDB](https://www.mongodb.com/)
+
+### Front-end
+
+1. @date-io/date-fns 1.x
+2. @material-ui/core ^4.12.3
+3. @material-ui/icons ^4.11.2
+4. @material-ui/pickers ^3.3.10
+5. date-fns ^2.23.0
+6. react ^17.0.2
+7. react-calendar ^3.4.0
+
+### Back-end
+
+1. click==8.0.1
+2. colorama==0.4.4
+3. Flask==2.0.1
+4. itsdangerous==2.0.1
+5. Jinja2==3.0.1
+6. MarkupSafe==2.0.1
+7. pymongo==3.12.0
+8. python-dotenv==0.19.0
+9. Werkzeug==2.0.1
+
+## Technical Notes
+
+1. Time addition for tasks coming in the next version.
