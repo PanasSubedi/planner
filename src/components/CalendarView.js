@@ -65,7 +65,7 @@ export const CalendarView = ({
         err => alert("Internal error.")
       )
     }
-  }, [calendarDate, getDateInFormat]);
+  }, [calendarDate.getMonth(), calendarDate.getYear(), getDateInFormat]);
 
   return (
     <Grid container spacing={2}>
